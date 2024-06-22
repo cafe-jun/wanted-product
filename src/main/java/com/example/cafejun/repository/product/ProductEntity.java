@@ -3,6 +3,7 @@ package com.example.cafejun.repository.product;
 import com.example.cafejun.domain.product.Product;
 import com.example.cafejun.domain.product.ProductStatus;
 import com.example.cafejun.repository.AuditField;
+import com.example.cafejun.repository.DefaultTime;
 import com.example.cafejun.repository.order.OrderEntity;
 import com.example.cafejun.repository.user.UserEntity;
 import jakarta.persistence.*;
@@ -21,7 +22,7 @@ import java.util.List;
         @Index(columnList = "name")},
         name = "product")
 @Entity
-public class ProductEntity extends AuditField {
+public class ProductEntity extends DefaultTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -39,17 +40,18 @@ public class ProductEntity extends AuditField {
     @Column(nullable = false)
     private Integer quantity;
 
+    @Column(nullable = false)
+    private Long registerId;
+
     @Builder
     // 생성자
-    public ProductEntity(String name, Double price, ProductStatus status, Integer quantity, String createdBy, String modifiedBy, LocalDateTime createdDate) {
+    public ProductEntity(String name, Double price, ProductStatus status, Integer quantity,Long registerId, LocalDateTime createdDate) {
         this.name = name;
         this.price = price;
         this.status = status;
         this.quantity = quantity;
-        this.createdBy = createdBy;
-        this.modifiedBy = modifiedBy;
+        this.registerId = registerId;
         this.createdDate = createdDate;
-
     }
 
 
@@ -60,7 +62,7 @@ public class ProductEntity extends AuditField {
                 .price(price)
                 .status(status)
                 .quantity(quantity)
-                .createdBy(createdBy)
+                .registerId(registerId)
                 .createdDate(createdDate)
                 .build();
     }

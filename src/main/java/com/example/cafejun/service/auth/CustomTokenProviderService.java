@@ -1,10 +1,13 @@
 package com.example.cafejun.service.auth;
 
+import com.example.cafejun.common.error.TokenErrorCode;
+import com.example.cafejun.common.exception.ApiException;
 import com.example.cafejun.config.security.token.UserPrincipal;
 import com.example.cafejun.domain.user.TokenMapping;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,13 +17,15 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
 public class CustomTokenProviderService {
 //    @Autowired
 //    private OAuth2Config oAuth2Config;
-
+String secretKey = "VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHaVlwEyVPQye08f7MGVA9XkHa08f7MGVA9XkHa08f7MGVA9XkHa08f7MGVA9XkHa";
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
@@ -99,26 +104,28 @@ public class CustomTokenProviderService {
         return (expiration.getTime()-now);
     }
 
-    public boolean validateToken(String token) {
+    public Map<String, Object> validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token);
-            return true;
-        } catch (io.jsonwebtoken.security.SecurityException ex) {
+            Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+            JwtParser parser = Jwts.parserBuilder().setSigningKey(key).build();
+//            Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token);
+            var result = parser.parseClaimsJws(token);
+            return new HashMap<String, Object>(result.getBody());
+        } catch (SecurityException | MalformedJwtException ex) {
             log.error("잘못된 JWT 서명입니다.");
-        } catch (MalformedJwtException ex) {
-            log.error("잘못된 JWT 서명입니다.");
+            throw new ApiException(TokenErrorCode.INVALID_TOKEN,ex);
         } catch (ExpiredJwtException ex) {
             log.error("만료된 JWT 토큰입니다.");
+            throw new ApiException(TokenErrorCode.EXPIRED_TOKEN,ex);
         } catch (UnsupportedJwtException ex) {
             log.error("지원되지 않는 JWT 토큰입니다.");
+            throw new ApiException(TokenErrorCode.UNSUPPORT_TOKEN,ex);
         } catch (IllegalArgumentException ex) {
             log.error("JWT 토큰이 잘못되었습니다.");
+            throw new ApiException(TokenErrorCode.TOKEN_EXCEPTION,ex);
         }
-        return false;
     }
     private Key getKey() {
-        System.out.println("CustomTokenProviderService.getKey"+"test1234");
-        String secretKey = "VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHaVlwEyVPQye08f7MGVA9XkHa08f7MGVA9XkHa08f7MGVA9XkHa08f7MGVA9XkHa";
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }

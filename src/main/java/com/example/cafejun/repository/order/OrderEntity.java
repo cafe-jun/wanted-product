@@ -17,8 +17,10 @@ public class OrderEntity extends AuditField {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "product_id")
     @Column(nullable = false)
-    private Long product_id;
+    private Long productId;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -26,14 +28,15 @@ public class OrderEntity extends AuditField {
     @Column(nullable = false)
     private Double price;
 
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
 
     @Builder
-    public OrderEntity(Long product_id,Integer quantity, Double price, OrderStatus status) {
-        this.product_id = product_id;
+    public OrderEntity(Long productId,Integer quantity, Double price, OrderStatus status) {
+        this.productId = productId;
         this.quantity = quantity;
         this.price = price;
         this.status = status;
@@ -42,7 +45,7 @@ public class OrderEntity extends AuditField {
     public Order toDomain() {
         return Order.builder()
                 .id(id)
-//                .product(product.toDomain())
+                .productId(productId)
                 .quantity(quantity)
                 .price(price)
                 .status(status)

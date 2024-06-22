@@ -15,4 +15,5 @@ public class ProductAppendix {
     public void saveProduct(Product product) {
         productRepository.save(product.toEntity());
     }
+
 }

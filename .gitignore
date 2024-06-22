@@ -1,1 +1,5 @@
 docker/**
+build/**
+out/**
+.idea/**
+.gradle/**
